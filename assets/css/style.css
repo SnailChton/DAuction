@@ -67,14 +67,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 .header {
     padding-top: 20px;
-    position: absolute;
+    position: fixed;
     width: 100%;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
+    
+    /* backdrop-filter: blur(15px); */
+    background-color: white;
 }
 .header__inner {
+    border-bottom: 3px solid black;
+    padding-bottom: 25px;
     display: flex;
     justify-content: space-between;
 }
@@ -103,7 +108,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .nav__link {
     padding: 5px;
-    border: 2px solid white;
+    border: 2px solid rgba(255, 255, 255, 0);
     display: inline-block;
     vertical-align: top;
     margin-left:12px;
