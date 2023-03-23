@@ -40,7 +40,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .intro__suptittle {
     font-family: 'Montserrat Alternates', sans-serif;
-    color: rgb(51,204,204);
+    color: rgb(28,176,28);
     font-weight: 400;
     font-size: 40px;
     margin-bottom: 20px;
@@ -90,17 +90,17 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     font-size: 32px;
 }
-.header__logo.part__one {
-    color: rgb(51,204,204);
+.header__logo__part__one {
+    color: rgb(28,176,28);
     border: 3px solid black;
     padding: 3px 5px;
     font-family: 'Montserrat Alternates', sans-serif;
     font-weight: 500;
 }
-.header__logo.part__two {
+.header__logo__part__two {
     padding: 3px;
     font-weight: 600;
-    border-bottom: 3px solid rgb(51,204,204);
+    border-bottom: 3px solid rgb(28,176,28);
 }
 
 .header__nav {
@@ -121,16 +121,15 @@ h1, h2, h3, h4, h5, h6 {
     color: black;
     transition: color 0.2s linear, border 0.2s linear;
 }
-.nav__link.main {
-    border: 2px solid rgb(51,204,204);
+.nav__link.active {
+    border: 2px solid rgb(28,176,28);
     border-bottom-left-radius: 7px;
     border-top-right-radius: 7px;
-    color: rgb(51,204,204);
+    color: rgb(28,176,28);
 }
 .nav__link:hover {
-    color: rgb(51,204,204);
-    border-bottom: 2px rgb(51,204,204) solid;
-}
-.red {
-    border: 1px solid red;
+    color: rgb(28,176,28);
+    border-bottom: 2px rgb(28,176,28) solid;
+    color: var(--hover-nav-link-color);
+    border-bottom: var(--hover-nav-link-border-bottom);
 }
