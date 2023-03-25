@@ -1,6 +1,8 @@
-from flask import Flask, render_template, url_for, flash, redirect;
+from datetime import datetime, timedelta
+
+from flask import Flask, render_template, url_for, flash, redirect
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, time, timedelta
+
 from forms import RegistrationForm, LoginForm
 
 app = Flask(__name__)
@@ -9,50 +11,56 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
 
 
+# app.app_context().push()
 # app.config['SQLALCHEMY DATABASE_URI'] ='sqlite:///blog.db'
 
 
-def set_image(gender):
-    if gender == 0:
-        return 'defaultMan.jpg'
-    if gender == 1:
-        return 'defaultMan.jpg'
-    else:
-        return 'defaultWoman.jpg'
+# def set_image(gender):
+#     if gender == 0:
+#         return 'defaultMan.jpg'
+#     if gender == 1:
+#         return 'defaultMan.jpg'
+#     else:
+#         return 'defaultWoman.jpg'
 
 
+# 0-no stated, 1-male, 2-female
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    gender = db.Column(db.Integer, default=0)  # 0-no stated, 1-male, 2-female
+    gender = db.Column(db.Integer, default=0)
     birthday = db.Column(db.DateTime)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default=set_image(gender))
+    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     money = db.Column(db.Float, nullable=False, default=0)
     password = db.Column(db.String(60), nullable=False)
     first_name = db.Column(db.String(30), nullable=False)
     second_name = db.Column(db.String(30))
     last_name = db.Column(db.String(30), nullable=False)
     phone_number = db.Column(db.String(15), nullable=False)
-    access_lvl = db.Column(db.Integer, nullable=False)
-    posts = db.relationship('Post', backref='author', lazy=True)
-    buys = db.relationship('Post', backref='buyer', lazy=True)
+    access_lvl = db.Column(db.Integer, nullable=False, default=0)
+    posts = db.relationship('Post', foreign_keys="Post.owner_id", backref='author', lazy=True)
+    buys = db.relationship('Post', foreign_keys="Post.buyer_id", backref='buyer', lazy=True)
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 
+# foreign_keys="post.owner_id"
+#
 
+
+# 0-not created, 1-created,2-started,3-archived
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
-    date_end = db.Column(db.DateTime, nullable=False, default=(date_posted + timedelta(days=1)))
-    status = db.Column(db.Integer, nullable=False, default=0)  # 0-not created, 1-created,2-started,3-archived
+    date_end = db.Column(db.DateTime, nullable=False, default=(datetime.utcnow()))
+    status = db.Column(db.Integer, nullable=False, default=0)
     content = db.Column(db.Text, nullable=False)
     start_price = db.Column(db.Float, nullable=False)
     current_price = db.Column(db.Float, nullable=False, default=start_price)
-    user_buyer = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_file = db.Column(db.String(20))
 
     def __repr__(self):
@@ -60,15 +68,15 @@ class Post(db.Model):
 
 
 # users = [
-    #     {
-    #         'name': 'Brigada',
-    #         'id': 1220
-    #     },
-    #     {
-    #         'name': 'Shishki',
-    #         'id': 420
-    #     }
-    # ]
+#     {
+#         'name': 'Brigada',
+#         'id': 1220
+#     },
+#     {
+#         'name': 'Shishki',
+#         'id': 420
+#     }
+# ]
 
 
 @app.route('/')
