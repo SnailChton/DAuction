@@ -1,5 +1,11 @@
-from digauc import db
+from digauc import db, login_manager
 from datetime import datetime, timedelta
+from flask_login import UserMixin
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 class Bid(db.Model):
@@ -22,7 +28,11 @@ class Follower(db.Model):
         return f"Follower('{self.follower}', '{self.following}')"
 
 
-class User(db.Model):
+# ------------------------------------------------------------------------
+# Удалить дефолты для имени, телефона и тд
+# Когда Елисей напишет фронт
+# ------------------------------------------------------------------------
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     gender = db.Column(db.Integer, default=0)
     birthday = db.Column(db.DateTime)
@@ -31,11 +41,11 @@ class User(db.Model):
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     money = db.Column(db.Float, nullable=False, default=0)
     password = db.Column(db.String(60), nullable=False)
-    first_name = db.Column(db.String(30), nullable=False)
-    second_name = db.Column(db.String(30))
+    first_name = db.Column(db.String(30), nullable=False, default='Anon')
+    second_name = db.Column(db.String(30), default='Anon')
     followers = db.Column(db.Integer, default=0)
-    last_name = db.Column(db.String(30), nullable=False)
-    phone_number = db.Column(db.String(15), nullable=False)
+    last_name = db.Column(db.String(30), nullable=False, default='Anon')
+    phone_number = db.Column(db.String(15), nullable=False, default='double cup')
     access_lvl = db.Column(db.Integer, nullable=False, default=0)
     subscribers = db.relationship('Follower', foreign_keys="Follower.following_id", backref='following', lazy=True)
     subscribes = db.relationship('Follower', foreign_keys="Follower.follower_id", backref='follower', lazy=True)
@@ -45,6 +55,7 @@ class User(db.Model):
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
+
 
 # foreign_keys="post.owner_id"
 
