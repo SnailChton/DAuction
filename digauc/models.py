@@ -45,7 +45,7 @@ class User(db.Model, UserMixin):
     second_name = db.Column(db.String(30), default='Anon')
     followers = db.Column(db.Integer, default=0)
     last_name = db.Column(db.String(30), nullable=False, default='Anon')
-    phone_number = db.Column(db.String(15), nullable=False, default='double cup')
+    phone_number = db.Column(db.String(15), nullable=False, default='88005553535')
     access_lvl = db.Column(db.Integer, nullable=False, default=0)
     subscribers = db.relationship('Follower', foreign_keys="Follower.following_id", backref='following', lazy=True)
     subscribes = db.relationship('Follower', foreign_keys="Follower.follower_id", backref='follower', lazy=True)
@@ -74,6 +74,7 @@ class Post(db.Model):
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_file = db.Column(db.String(20))
+    selling_FILE = db.Column(db.String(100))
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}', '{self.content}')"
