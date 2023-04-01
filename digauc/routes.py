@@ -5,7 +5,7 @@ import secrets
 from PIL import Image
 from flask import Flask, render_template, url_for, flash, redirect, request
 from digauc import app, db, bcrypt
-from digauc.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from digauc.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from digauc.models import User, Post, News, Bid, Follower
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -13,7 +13,8 @@ from flask_login import login_user, current_user, logout_user, login_required
 @app.route('/')
 @app.route('/home')
 def index():
-    return render_template("index.html")
+    posts =Post.query.all()
+    return render_template("index.html", posts=posts)
 
 
 @app.route('/about')
@@ -65,7 +66,18 @@ def logout():
     return redirect(url_for('index'))
 
 
-def save_picture(form_picture, form_username):
+def save_lot_picture(form_picture, form_username):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+    i = Image.open(form_picture)
+    i.thumbnail()
+    i.save(picture_path)
+    return picture_fn
+
+
+def save_user_picture(form_picture, form_username):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
@@ -80,7 +92,7 @@ def save_picture(form_picture, form_username):
     i_fix = i_fix.resize((width_size, fixed_height), PIL.Image.NEAREST)
     i_fix.save(picture_path)
 
-    # methode 2(for optimizing server)
+    # method 2(for optimizing server)
     # output_size = (480, 480)
     # i = Image.open(form_picture)
     # i.thumbnail(output_size)
@@ -95,9 +107,10 @@ def account():
     form = UpdateAccountForm()
     if form.validate_on_submit():
         if form.picture.data:
-            picture_file = save_picture(form.picture.data, form.username.data)
+            picture_file = save_user_picture(form.picture.data, form.username.data)
             current_user.image_file = picture_file
-            print('picture mock_print')
+            # print('picture mock_print')
+
         current_user.username = form.username.data
         current_user.email = form.email.data
         db.session.commit()
@@ -108,3 +121,25 @@ def account():
         form.email.data = current_user.email
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account', image_file=image_file, form=form)
+
+
+@app.route('/post/new', methods=['GET', 'POST'])
+@login_required
+def new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        if form.picture.data:
+            picture_file = save_lot_picture(form.picture.data, form.username.data)
+            post = Post(title=form.title.data, content=form.content.data,
+                        date_posted=form.date_start.data, date_end=form.date_end.data,
+                        image_file=picture_file,
+                        author=current_user, start_price=form.start_price.data)
+        else:
+            post = Post(title=form.title.data, content=form.content.data,
+                        date_posted=form.date_start.data, date_end=form.date_end.data,
+                        author=current_user, start_price=form.start_price.data)
+        db.session.add(post)
+        db.session.commit()
+        flash('Лот зарегестрирован', 'success')
+        return redirect(url_for('index'))
+    return render_template('create_post.html', title='New Lot', form=form)

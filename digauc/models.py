@@ -65,7 +65,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
-    date_end = db.Column(db.DateTime, nullable=False, default=(datetime.utcnow()))
+    date_end = db.Column(db.DateTime, nullable=False, default=(datetime.utcnow() + timedelta(hours=24)))
     status = db.Column(db.Integer, nullable=False, default=0)
     content = db.Column(db.Text, nullable=False)
     start_price = db.Column(db.Float, nullable=False)
@@ -74,7 +74,7 @@ class Post(db.Model):
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_file = db.Column(db.String(20))
-    selling_FILE = db.Column(db.String(100))
+    #selling_FILE = db.Column(db.String(100))
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}', '{self.content}')"

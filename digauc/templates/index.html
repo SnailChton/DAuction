@@ -1,43 +1,21 @@
-<!DOCTYPE html>
-{% extends 'layout_alpha.html' %}
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{{ url_for('static', filename='images/stonks_icon.png') }}">
-<!--    type="text/css"-->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:wght@300;400;500;600;700&family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <title>Digital Auction</title>
-</head>
-
-{% block body %}
-
-<div class="intro">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                  {{ message }}
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endwith %}
-          {% block content %}{% endblock %}
-        <div class="container">
-            <div class="intro__inner">
-                <h2 class="intro__suptittle">Монетизация ваших идей</h2>
-                <h1 class="intro__tittle">ДОБРО ПОЖАЛОВАТЬ НА АУКЦИОН ЦИФРОВЫХ ПРОДУКТОВ</h1>
-                <a class="intro__btn" href="/about" >Узнать больше</a>
-                <br>
-                <img class="intro__arrow__icon" src="{{ url_for('static', filename='images/icn_arrow.gif') }}" alt="">
-            </div>
+{% extends "layout_beta.html" %}
+{% block content %}
+{% for post in posts %}
+<article class="media content-section">
+    <img class="rounded-circle account-img"
+         src="{{ url_for('static', filename='profile_pics/' + post.author.image_file)}}">
+    <div class="media-body">
+        <div class="article-metadata">
+            <a class="mr-2" href="#">{{ post.author.username }}</a>
+            <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }} - начало, </small>
+            <small class="text-muted" >{{ post.date_end.strftime('%Y-%m-%d') }} - конец</small>
         </div>
+        <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
+        <p class="article-content">{{ post.content }}</p>
+        <p class="article-content">{{ post.start_price }} руб</p>
     </div>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-{% endblock %}
 
-</html>
+
+</article>
+{% endfor %}
+{% endblock content %}

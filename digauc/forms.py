@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
+from datetime import datetime, timedelta
 from flask_login import current_user
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, FloatField, DateField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Regexp
 from digauc.models import User
 
@@ -67,3 +68,25 @@ class UpdateAccountForm(FlaskForm):
             user = User.query.filter_by(email=email.data).first()
             if user:
                 raise ValidationError("Почта уже зарегистрирована")
+
+
+class PostForm(FlaskForm):
+    title = StringField('Наимеование', validators=[DataRequired()])
+    content = TextAreaField('Расскажите о лоте', validators=[DataRequired()])
+    start_price = FloatField('Начальная цена', validators=[DataRequired()])
+#    user = User.query.filter_by(email=current_user.email).first()
+#   user_id = user.id
+    date_start = DateField('Если пропустить, то начнется сейчас', default=datetime.utcnow())
+    date_end = DateField('Если пропустить, то зак через 24 часа', default=datetime.utcnow() + timedelta(hours=24))
+    picture = FileField('Изображение лота', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Выставить')
+
+    # def validate_date_start(self, date_start, date_now=None):
+    #     # date_now = datetime.utcnow()
+    #     # date_now = date_now.replace(hour=0, minute=0, second=0, microsecond=0)
+    #     if date_start.data < datetime.utcnow():
+    #         raise ValidationError("Время начала указано неверно")
+    #
+    # def validate_date_end(self, date_end, date_start):
+    #     if date_end.data < date_start.data:
+    #         raise ValidationError("Время окончания указано неверно")
