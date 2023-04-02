@@ -8,12 +8,15 @@ from digauc import app, db, bcrypt
 from digauc.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from digauc.models import User, Post, News, Bid, Follower
 from flask_login import login_user, current_user, logout_user, login_required
+from sqlalchemy import desc
+
 
 
 @app.route('/')
 @app.route('/home')
 def index():
-    posts =Post.query.all()
+    posts = Post.query.order_by(desc(Post.date_posted)).all()
+    #image_file = url_for('static', filename='lot_pics/' + posts.image_file)
     return render_template("index.html", posts=posts)
 
 
@@ -66,18 +69,21 @@ def logout():
     return redirect(url_for('index'))
 
 
-def save_lot_picture(form_picture, form_username):
+def save_lot_picture(form_picture):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+    picture_path = os.path.join(app.root_path, 'static/lot_pics', picture_fn)
+
+    #output_size = (125, 125)
     i = Image.open(form_picture)
-    i.thumbnail()
+    #i.thumbnail()#(output_size)
     i.save(picture_path)
+
     return picture_fn
 
 
-def save_user_picture(form_picture, form_username):
+def save_user_picture(form_picture):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
@@ -107,7 +113,7 @@ def account():
     form = UpdateAccountForm()
     if form.validate_on_submit():
         if form.picture.data:
-            picture_file = save_user_picture(form.picture.data, form.username.data)
+            picture_file = save_user_picture(form.picture.data)
             current_user.image_file = picture_file
             # print('picture mock_print')
 
@@ -129,12 +135,15 @@ def new_post():
     form = PostForm()
     if form.validate_on_submit():
         if form.picture.data:
-            picture_file = save_lot_picture(form.picture.data, form.username.data)
+            print('pic exist')
+            picture_file = save_lot_picture(form.picture.data)
+            print(picture_file)
             post = Post(title=form.title.data, content=form.content.data,
                         date_posted=form.date_start.data, date_end=form.date_end.data,
                         image_file=picture_file,
                         author=current_user, start_price=form.start_price.data)
         else:
+            print('pic doesnt exist')
             post = Post(title=form.title.data, content=form.content.data,
                         date_posted=form.date_start.data, date_end=form.date_end.data,
                         author=current_user, start_price=form.start_price.data)

@@ -74,11 +74,12 @@ class PostForm(FlaskForm):
     title = StringField('Наимеование', validators=[DataRequired()])
     content = TextAreaField('Расскажите о лоте', validators=[DataRequired()])
     start_price = FloatField('Начальная цена', validators=[DataRequired()])
+    picture = FileField('Фото', validators=[FileAllowed(['jpg', 'png'])])
 #    user = User.query.filter_by(email=current_user.email).first()
 #   user_id = user.id
     date_start = DateField('Если пропустить, то начнется сейчас', default=datetime.utcnow())
     date_end = DateField('Если пропустить, то зак через 24 часа', default=datetime.utcnow() + timedelta(hours=24))
-    picture = FileField('Изображение лота', validators=[FileAllowed(['jpg', 'png'])])
+
     submit = SubmitField('Выставить')
 
     # def validate_date_start(self, date_start, date_now=None):
