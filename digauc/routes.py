@@ -3,7 +3,7 @@ import os
 import PIL
 import secrets
 from PIL import Image
-from flask import Flask, render_template, url_for, flash, redirect, request
+from flask import Flask, render_template, url_for, flash, redirect, request, abort
 from digauc import app, db, bcrypt
 from digauc.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from digauc.models import User, Post, News, Bid, Follower
@@ -11,12 +11,14 @@ from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy import desc
 
 
-
 @app.route('/')
 @app.route('/home')
 def index():
     posts = Post.query.order_by(desc(Post.date_posted)).all()
-    #image_file = url_for('static', filename='lot_pics/' + posts.image_file)
+    post = Post.query.filter_by(image_file='190d4023d6e70ac3.jpg').first()
+    print(post.owner_id)
+    print(post.image_file)
+    # image_file = url_for('static', filename='lot_pics/' + posts.image_file)
     return render_template("index.html", posts=posts)
 
 
@@ -75,9 +77,9 @@ def save_lot_picture(form_picture):
     picture_fn = random_hex + f_ext
     picture_path = os.path.join(app.root_path, 'static/lot_pics', picture_fn)
 
-    #output_size = (125, 125)
+    # output_size = (125, 125)
     i = Image.open(form_picture)
-    #i.thumbnail()#(output_size)
+    # i.thumbnail()#(output_size)
     i.save(picture_path)
 
     return picture_fn
@@ -142,6 +144,7 @@ def new_post():
                         date_posted=form.date_start.data, date_end=form.date_end.data,
                         image_file=picture_file,
                         author=current_user, start_price=form.start_price.data)
+            print(post.image_file)
         else:
             print('pic doesnt exist')
             post = Post(title=form.title.data, content=form.content.data,
@@ -151,4 +154,66 @@ def new_post():
         db.session.commit()
         flash('Лот зарегестрирован', 'success')
         return redirect(url_for('index'))
-    return render_template('create_post.html', title='New Lot', form=form)
+    return render_template('create_post.html', title='New Lot',
+                           form=form, legend='New Post')
+
+
+@app.route('/post/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post.html', title=post.title, post=post)
+
+
+# !----------------Не работает----------------!#
+@app.route('/post/<int:post_id>/update', methods=['GET', 'POST'])
+@login_required
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    if post.status >= 2:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        if form.picture.data:
+            print('pic exist')
+            picture_file = save_lot_picture(form.picture.data)
+            post.image_file = picture_file
+        post.date_posted = form.date_start.data
+        post.date_end = form.date_end.data
+        post.start_price = form.start_price.data
+        db.session.commit()
+        flash('Your post has been updated!', 'success')
+        return redirect(url_for('post', post_id=post.id))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+        form.start_price = post.start_price
+        form.date_start = post.date_posted
+        form.date_end = post.date_end
+        if post.image_file:
+            picture_fn = post.image_file
+            picture_path = os.path.join(app.root_path, 'static/lot_pics', picture_fn)
+            i = Image.open(picture_path)
+            # output_size = (125, 125)
+            # i = Image.open(form_picture)
+            form.picture = i
+    return render_template('create_post.html', title='Update Lot',
+                           form=form, legend='Update Post')
+
+
+@app.route('/post/<int:post_id>/delete', methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    if post.status >= 2:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('index'))
