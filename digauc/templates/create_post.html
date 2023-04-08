@@ -32,7 +32,8 @@
                 {% endif %}
             </div>
             <div class="form-group">
-                {{ form.start_price.label(class="form-control-label") }}
+                {{ form.start_price.label() }}
+                 {{ form.start_price.label(class="form-control-label") }}
                 {% if form.start_price.errors %}
                     {{ form.start_price(class="form-control form-control-lg is-invalid") }}
                 <div class="invalid-feedback">

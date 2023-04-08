@@ -71,7 +71,7 @@ class UpdateAccountForm(FlaskForm):
 
 
 class PostForm(FlaskForm):
-    title = StringField('Наимеование', validators=[DataRequired()])
+    title = StringField('Наименование', validators=[DataRequired()])
     content = TextAreaField('Расскажите о лоте', validators=[DataRequired()])
     start_price = FloatField('Начальная цена', validators=[DataRequired()])
     picture = FileField('Фото', validators=[FileAllowed(['jpg', 'png'])])
@@ -82,12 +82,15 @@ class PostForm(FlaskForm):
 
     submit = SubmitField('Выставить')
 
-    # def validate_date_start(self, date_start, date_now=None):
-    #     # date_now = datetime.utcnow()
-    #     # date_now = date_now.replace(hour=0, minute=0, second=0, microsecond=0)
-    #     if date_start.data < datetime.utcnow():
-    #         raise ValidationError("Время начала указано неверно")
-    #
-    # def validate_date_end(self, date_end, date_start):
-    #     if date_end.data < date_start.data:
-    #         raise ValidationError("Время окончания указано неверно")
+    def validate_date_end(self, date_end):
+        date_start = self.date_start.data
+        print(date_start)
+        print(date_end.data)
+        if date_end.data < date_start:
+            raise ValidationError("Время окончания указано неверно")
+
+    def validate_date_start(self, date_start):
+        #date_now = datetime.utcnow()
+        #date_now = date_now.replace(hour=0, minute=0, second=0, microsecond=0)
+        if date_start.data < datetime.utcnow().date():
+            raise ValidationError("Время начала указано неверно")
