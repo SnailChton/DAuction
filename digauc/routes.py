@@ -14,10 +14,17 @@ from sqlalchemy import desc
 @app.route('/')
 @app.route('/home')
 def index():
+    # С пагинацией
+    # page = request.args.get('page', 1, type=int)
+    # posts = Post.query.order_by(desc(Post.date_posted)).paginate(page=page, per_page=4)
+
+    # Без пагинации
     posts = Post.query.order_by(desc(Post.date_posted)).all()
-    post = Post.query.filter_by(image_file='190d4023d6e70ac3.jpg').first()
-    print(post.owner_id)
-    print(post.image_file)
+
+    # Просто проверочка
+    # post = Post.query.filter_by(image_file='190d4023d6e70ac3.jpg').first()
+    # print(post.owner_id)
+    # print(post.image_file)
     # image_file = url_for('static', filename='lot_pics/' + posts.image_file)
     return render_template("index.html", posts=posts)
 
@@ -198,7 +205,7 @@ def update_post(post_id):
             picture_fn = post.image_file
             picture_path = os.path.join(app.root_path, 'static/lot_pics', picture_fn)
             i = Image.open(picture_path)
-            # output_size = (125, 125)
+            # output_size = (400, 400)
             # i = Image.open(form_picture)
             form.picture = i
     return render_template('create_post.html', title='Update Lot',
@@ -217,3 +224,15 @@ def delete_post(post_id):
     db.session.commit()
     flash('Your post has been deleted!', 'success')
     return redirect(url_for('index'))
+
+
+@app.route('/user/<string:username>')
+def user_posts(username):
+    # С пагинацией
+    page = request.args.get('page', 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = Post.query.filter_by(author=user)\
+        .order_by(desc(Post.date_posted))\
+        .paginate(page=page, per_page=4)
+
+    return render_template("user_posts.html", posts=posts, user=user)

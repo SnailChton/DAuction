@@ -19,7 +19,7 @@
         <p class="article-content">{{ post.content }}</p>
         <p class="article-content">{{ post.start_price }} руб</p>
     </div>
-    {% if post.picture_file %}
+    {% if post.image_file %}
     <img class="rounded-circle account-img" src="{{ url_for('static', filename='lot_pics/' + post.image_file)}}">
     {% endif %}
 </article>
