@@ -1,5 +1,7 @@
-from digauc import db, login_manager
-from datetime import datetime, timedelta
+from digauc import db, login_manager, app
+import jwt
+# from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
+from datetime import datetime, timedelta, timezone
 from flask_login import UserMixin
 
 
@@ -53,6 +55,21 @@ class User(db.Model, UserMixin):
     posts = db.relationship('Post', foreign_keys="Post.owner_id", backref='author', lazy=True)
     buys = db.relationship('Post', foreign_keys="Post.buyer_id", backref='buyer', lazy=True)
 
+    # Я хз как его по человечиски делать, там или старье или выкрутасы. Будущий Никита, удачи
+    def get_reset_token(self, expires_sec=1800):
+        # s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        # return s.dumps({'user_id': self.user_id})
+        payload = {'user_id': self.id, 'exp': datetime.now(timezone.utc) + timedelta(seconds=expires_sec)}
+        return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+
+    @staticmethod
+    def verify_reset_token(token):
+        try:
+            user_id = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+        except:
+            return None
+        return User.query.get(user_id)
+
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 
@@ -74,7 +91,8 @@ class Post(db.Model):
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_file = db.Column(db.String(20))
-    #selling_FILE = db.Column(db.String(100))
+
+    # selling_FILE = db.Column(db.String(100))
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}', '{self.content}')"

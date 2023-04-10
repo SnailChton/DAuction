@@ -75,8 +75,8 @@ class PostForm(FlaskForm):
     content = TextAreaField('Расскажите о лоте', validators=[DataRequired()])
     start_price = FloatField('Начальная цена', validators=[DataRequired()])
     picture = FileField('Фото', validators=[FileAllowed(['jpg', 'png'])])
-#    user = User.query.filter_by(email=current_user.email).first()
-#   user_id = user.id
+    #    user = User.query.filter_by(email=current_user.email).first()
+    #   user_id = user.id
     date_start = DateField('Если пропустить, то начнется сейчас', default=datetime.utcnow())
     date_end = DateField('Если пропустить, то зак через 24 часа', default=datetime.utcnow() + timedelta(hours=24))
 
@@ -90,7 +90,25 @@ class PostForm(FlaskForm):
             raise ValidationError("Время окончания указано неверно")
 
     def validate_date_start(self, date_start):
-        #date_now = datetime.utcnow()
-        #date_now = date_now.replace(hour=0, minute=0, second=0, microsecond=0)
+        # date_now = datetime.utcnow()
+        # date_now = date_now.replace(hour=0, minute=0, second=0, microsecond=0)
         if date_start.data < datetime.utcnow().date():
             raise ValidationError("Время начала указано неверно")
+
+
+class RequestResetForm(FlaskForm):
+    email = StringField('Email',
+                        validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user is None:
+            raise ValidationError('There is no account with that email. You must register first.')
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=4)])
+    # Вопросики на счет EqualTo('password')
+    confirm_password = PasswordField('Confirm password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Изменить пароль')
