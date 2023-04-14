@@ -1,4 +1,5 @@
-from digauc import db, login_manager, app
+from digauc import db, login_manager
+from flask import current_app
 import jwt
 # from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from datetime import datetime, timedelta, timezone
@@ -60,12 +61,12 @@ class User(db.Model, UserMixin):
         # s = Serializer(app.config['SECRET_KEY'], expires_sec)
         # return s.dumps({'user_id': self.user_id})
         payload = {'user_id': self.id, 'exp': datetime.now(timezone.utc) + timedelta(seconds=expires_sec)}
-        return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 
     @staticmethod
     def verify_reset_token(token):
         try:
-            user_id = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            user_id = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
         except:
             return None
         return User.query.get(user_id)
